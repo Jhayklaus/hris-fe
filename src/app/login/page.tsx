@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/hooks/useAuth'
 import { toast } from 'sonner'
-import { Building2, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react'
+import { Building2, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -29,8 +29,8 @@ export default function LoginPage() {
 
     try {
       await login({ email, password, companyId })
-      toast.success('Login successful!')
-      
+      toast.success('Welcome back')
+
       // Redirect based on user role
       const userData = typeof window !== 'undefined' ? localStorage.getItem('user') : null
       if (userData) {
@@ -50,200 +50,123 @@ export default function LoginPage() {
         }
       }
     } catch (error) {
-      toast.error('Login failed. Please check your credentials.')
+      toast.error('Invalid credentials')
       console.error('Login error:', error)
     } finally {
       setIsLoading(false)
     }
   }
 
+  if (!mounted) return null
+
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-indigo-900 to-slate-900">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-secondary/20 to-primary/20 rounded-full blur-3xl animate-pulse animation-delay-2000" />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-accent/10 to-primary/10 rounded-full blur-3xl animate-pulse animation-delay-4000" />
-      </div>
+    <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 relative overflow-hidden">
+      {/* Subtle Background Pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+      <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/20 opacity-20 blur-[100px]"></div>
 
-      {/* Grid pattern overlay */}
-      <div className="absolute inset-0 bg-grid-slate-800/20 [mask-image:linear-gradient(to_bottom,white_20%,transparent_100%)]" />
-
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          {/* Header with premium branding */}
-          <div className="text-center mb-8 animate-fade-in-up">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-2xl mb-6 shadow-2xl shadow-primary/25">
-              <span className="text-white font-bold text-3xl font-display">K</span>
-            </div>
-            <div className="space-y-2">
-              <h1 className="text-4xl font-display font-bold text-white mb-2">
-                Welcome to Kọlá
-                <Sparkles className="inline-block w-6 h-6 ml-2 text-accent animate-pulse" />
-              </h1>
-              <p className="text-slate-300 text-lg">Payroll-first HR for Nigerian SMEs</p>
-            </div>
+      <div className="w-full max-w-md p-4 relative z-10">
+        {/* Logo Section */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-primary rounded-xl shadow-lg shadow-primary/20 mb-4">
+            <span className="text-primary-foreground font-bold text-xl font-display">K</span>
           </div>
+          <h1 className="text-2xl font-bold font-display text-white tracking-tight">Welcome back</h1>
+          <p className="text-muted-foreground mt-2 text-sm">Sign in to your Kọlá account</p>
+        </div>
 
-          {/* Premium login card */}
-          <Card className="premium-card border-white/10 backdrop-blur-xl">
-            <CardHeader className="space-y-1 pb-6">
-              <CardTitle className="text-2xl font-display text-white">Sign In</CardTitle>
-              <CardDescription className="text-slate-300">
-                Access your payroll dashboard
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Company ID Field */}
-                <div className="space-y-2">
-                  <Label htmlFor="companyId" className="text-slate-200 flex items-center">
-                    <Building2 className="w-4 h-4 mr-2 text-accent" />
-                    Company ID
-                  </Label>
+        {/* Login Card */}
+        <Card className="border-border/50 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 backdrop-blur-sm bg-card/95">
+          <CardContent className="pt-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="companyId">Company ID</Label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="companyId"
-                    type="text"
-                    placeholder="Enter your company ID"
+                    placeholder="e.g. acme-corp"
                     value={companyId}
                     onChange={(e) => setCompanyId(e.target.value)}
+                    className="pl-9 bg-background/50"
                     required
                     disabled={isLoading}
-                    className="premium-input"
                   />
                 </div>
+              </div>
 
-                {/* Email Field */}
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-slate-200 flex items-center">
-                    <Mail className="w-4 h-4 mr-2 text-accent" />
-                    Email Address
-                  </Label>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="name@company.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    className="pl-9 bg-background/50"
                     required
                     disabled={isLoading}
-                    className="premium-input"
                   />
                 </div>
+              </div>
 
-                {/* Password Field */}
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-slate-200 flex items-center">
-                    <Lock className="w-4 h-4 mr-2 text-accent" />
-                    Password
-                  </Label>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <a href="#" className="text-xs text-primary hover:underline font-medium">
+                    Forgot password?
+                  </a>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    className="pl-9 bg-background/50"
                     required
                     disabled={isLoading}
-                    className="premium-input"
                   />
                 </div>
-
-                {/* Submit Button */}
-                <Button 
-                  type="submit" 
-                  className="w-full premium-button"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <span className="flex items-center">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-                      Signing in...
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center">
-                      Sign In
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </span>
-                  )}
-                </Button>
-              </form>
-
-              {/* Demo credentials */}
-              {/* <div className="mt-6 p-4 bg-slate-800/50 rounded-lg border border-white/10">
-                <p className="text-slate-300 text-sm mb-2">Demo credentials:</p>
-                <div className="space-y-1 text-xs text-slate-400">
-                  <p><span className="text-accent">Company:</span> demo-company</p>
-                  <p><span className="text-accent">Admin:</span> admin@kola.com / password</p>
-                  <p><span className="text-accent">Manager:</span> manager@kola.com / password</p>
-                  <p><span className="text-accent">Employee:</span> employee@kola.com / password</p>
-                </div>
-              </div> */}
-
-              {/* Signup Link */}
-              <div className="mt-6 text-center">
-                <p className="text-slate-400 text-sm">
-                  Don't have an account?{' '}
-                  <button
-                    onClick={() => router.push('/signup')}
-                    className="text-accent hover:text-accent/80 font-medium transition-colors duration-200"
-                  >
-                    Sign up
-                  </button>
-                </p>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Footer */}
-          <div className="mt-8 text-center">
-            <p className="text-slate-400 text-sm">
-              Powered by Kọlá HR Platform
-            </p>
-          </div>
-        </div>
+              <Button
+                type="submit"
+                className="w-full font-medium"
+                disabled={isLoading}
+                size="lg"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Footer */}
+        <p className="text-center text-sm text-muted-foreground mt-6">
+          Don't have an account?{' '}
+          <button
+            onClick={() => router.push('/signup')}
+            className="text-primary font-medium hover:underline transition-all"
+          >
+            Start free trial
+          </button>
+        </p>
       </div>
-
-      {/* Custom styles for animations */}
-      <style jsx>{`
-        .animate-fade-in-up {
-          animation: fadeInUp 0.8s ease-out;
-        }
-        
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-        
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-        
-        .premium-card {
-          animation: slideIn 0.6s ease-out 0.2s both;
-        }
-        
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   )
 }

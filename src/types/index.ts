@@ -11,6 +11,7 @@ export interface User {
 export interface LoginCredentials {
   email: string
   password: string
+  companyId: string
 }
 
 export interface AuthResponse {

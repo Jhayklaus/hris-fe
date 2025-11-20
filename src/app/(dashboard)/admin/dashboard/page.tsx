@@ -122,7 +122,7 @@ export default function AdminDashboard() {
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <LoadingState 
+        <LoadingState
           title="Loading dashboard"
           description="Fetching your HR data..."
         />
@@ -251,7 +251,7 @@ export default function AdminDashboard() {
 
       {/* Stats Grid - Premium Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => {
+        {statsData.map((stat, index) => {
           const Icon = stat.icon
           return (
             <Card key={index} className="premium-card border-white/10 backdrop-blur-sm hover-lift">
@@ -260,12 +260,10 @@ export default function AdminDashboard() {
                   <div className={`p-3 rounded-xl ${stat.bgColor} border ${stat.borderColor}`}>
                     <Icon className={`h-6 w-6 ${stat.color}`} />
                   </div>
-                  <div className={`flex items-center space-x-1 text-sm ${
-                    stat.trend === 'up' ? 'text-success' : 'text-warning'
-                  }`}>
-                    <ArrowUpRight className={`h-4 w-4 ${
-                      stat.trend === 'down' ? 'rotate-90' : ''
-                    }`} />
+                  <div className={`flex items-center space-x-1 text-sm ${stat.trend === 'up' ? 'text-success' : 'text-warning'
+                    }`}>
+                    <ArrowUpRight className={`h-4 w-4 ${stat.trend === 'down' ? 'rotate-90' : ''
+                      }`} />
                     <span>{stat.change}</span>
                   </div>
                 </div>
@@ -293,28 +291,25 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
-              {recentActivities.map((activity, index) => (
+              {activities.map((activity, index) => (
                 <div key={activity.id} className="flex items-start space-x-4 group hover:bg-white/5 rounded-lg p-3 transition-all">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    activity.status === 'success' ? 'bg-success/10 border border-success/20' :
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${activity.status === 'success' ? 'bg-success/10 border border-success/20' :
                     activity.status === 'warning' ? 'bg-warning/10 border border-warning/20' :
-                    'bg-primary/10 border border-primary/20'
-                  }`}>
-                    <activity.icon className={`w-5 h-5 ${
-                      activity.status === 'success' ? 'text-success' :
+                      'bg-primary/10 border border-primary/20'
+                    }`}>
+                    <activity.icon className={`w-5 h-5 ${activity.status === 'success' ? 'text-success' :
                       activity.status === 'warning' ? 'text-warning' :
-                      'text-primary'
-                    }`} />
+                        'text-primary'
+                      }`} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-white font-medium">{activity.message}</p>
                     <p className="text-xs text-slate-400 mt-1">{activity.time}</p>
                   </div>
-                  <div className={`w-2 h-2 rounded-full mt-2 ${
-                    activity.status === 'success' ? 'bg-success' :
+                  <div className={`w-2 h-2 rounded-full mt-2 ${activity.status === 'success' ? 'bg-success' :
                     activity.status === 'warning' ? 'bg-warning' :
-                    'bg-primary'
-                  }`} />
+                      'bg-primary'
+                    }`} />
                 </div>
               ))}
             </div>

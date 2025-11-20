@@ -3,8 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { apiService } from '@/services/api'
-import { motion } from 'framer-motion'
-import { ArrowLeft, UserPlus, Mail, Lock, Building2, User } from 'lucide-react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { toast } from 'sonner'
+import { ArrowLeft, UserPlus, Mail, Lock, Building2, User, Loader2, ArrowRight } from 'lucide-react'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -18,27 +22,24 @@ export default function SignupPage() {
     role: 'ADMIN' as 'ADMIN' | 'MANAGER' | 'EMPLOYEE'
   })
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
-    setError('')
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setError('')
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
+      toast.error('Passwords do not match')
       setIsLoading(false)
       return
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters')
+      toast.error('Password must be at least 6 characters')
       setIsLoading(false)
       return
     }
@@ -50,10 +51,10 @@ export default function SignupPage() {
         role: formData.role,
         companyId: formData.companyId
       })
-      
+
       // Get user profile after signup
       const profile = await apiService.getMyProfile()
-      
+
       // Store auth data
       localStorage.setItem('accessToken', token)
       localStorage.setItem('user', JSON.stringify({
@@ -65,221 +66,201 @@ export default function SignupPage() {
         companyId: profile.companyId,
         companyName: 'Kọlá HR Platform'
       }))
-      
+
+      toast.success('Account created successfully')
       router.push('/admin/dashboard')
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Signup failed. Please try again.')
+      toast.error(err.response?.data?.message || 'Signup failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-br from-violet-500/20 to-pink-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-5">
-          <div className="grid grid-cols-12 gap-4 w-full h-full">
-            {Array.from({ length: 144 }).map((_, i) => (
-              <div key={i} className="bg-gradient-to-br from-indigo-500 to-purple-500 rounded-sm" />
-            ))}
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 relative overflow-hidden py-8">
+      {/* Subtle Background Pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+      <div className="absolute right-0 bottom-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-primary/20 opacity-20 blur-[100px]"></div>
 
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="w-full max-w-md"
+      <div className="w-full max-w-lg p-4 relative z-10">
+        {/* Back Button */}
+        <button
+          onClick={() => router.push('/')}
+          className="mb-6 inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          {/* Back to Home */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2, duration: 0.4 }}
-            className="mb-8"
-          >
-            <button
-              onClick={() => router.push('/')}
-              className="inline-flex items-center text-indigo-300 hover:text-white transition-colors duration-200 group"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-              Back to Home
-            </button>
-          </motion.div>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
+        </button>
 
-          {/* Logo and Title */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="text-center mb-10"
-          >
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-4 shadow-lg">
-              <UserPlus className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-4xl font-bold text-white mb-2">Create Account</h1>
-            <p className="text-indigo-300">Join Kọlá HR Platform today</p>
-          </motion.div>
+        {/* Logo Section */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-primary rounded-xl shadow-lg shadow-primary/20 mb-4">
+            <UserPlus className="w-6 h-6 text-primary-foreground" />
+          </div>
+          <h1 className="text-2xl font-bold font-display text-white tracking-tight">Create Account</h1>
+          <p className="text-muted-foreground mt-2 text-sm">Join Kọlá HR Platform today</p>
+        </div>
 
-          {/* Signup Form */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, duration: 0.5 }}
-            className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-white/20"
-          >
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Name Fields */}
+        {/* Signup Card */}
+        <Card className="border-border/50 shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 backdrop-blur-sm bg-card/95">
+          <CardContent className="pt-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="relative group">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-indigo-300 group-focus-within:text-indigo-400 transition-colors" />
-                  <input
-                    type="text"
-                    name="firstName"
-                    placeholder="First Name"
-                    value={formData.firstName}
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="firstName"
+                      name="firstName"
+                      placeholder="John"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      className="pl-9 bg-background/50"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="lastName"
+                      name="lastName"
+                      placeholder="Doe"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      className="pl-9 bg-background/50"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="name@company.com"
+                    value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                    className="pl-9 bg-background/50"
                     required
+                    disabled={isLoading}
                   />
                 </div>
-                <div className="relative group">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-indigo-300 group-focus-within:text-indigo-400 transition-colors" />
-                  <input
-                    type="text"
-                    name="lastName"
-                    placeholder="Last Name"
-                    value={formData.lastName}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="companyId">Company ID</Label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="companyId"
+                    name="companyId"
+                    placeholder="e.g. acme-corp"
+                    value={formData.companyId}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                    className="pl-9 bg-background/50"
                     required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
 
-              {/* Email Field */}
-              <div className="relative group">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-indigo-300 group-focus-within:text-indigo-400 transition-colors" />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email Address"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
-                  required
-                />
+              <div className="space-y-2">
+                <Label htmlFor="role">Role</Label>
+                <div className="relative">
+                  <select
+                    id="role"
+                    name="role"
+                    value={formData.role}
+                    onChange={handleInputChange}
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none"
+                    disabled={isLoading}
+                  >
+                    <option value="ADMIN">Admin</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="EMPLOYEE">Employee</option>
+                  </select>
+                </div>
               </div>
 
-              {/* Company ID Field */}
-              <div className="relative group">
-                <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-indigo-300 group-focus-within:text-indigo-400 transition-colors" />
-                <input
-                  type="text"
-                  name="companyId"
-                  placeholder="Company ID"
-                  value={formData.companyId}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
-                  required
-                />
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="pl-9 bg-background/50"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
               </div>
 
-              {/* Role Field */}
-              <div className="relative group">
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleInputChange}
-                  className="w-full pl-4 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 appearance-none"
-                >
-                  <option value="ADMIN" className="bg-slate-800">Admin</option>
-                  <option value="MANAGER" className="bg-slate-800">Manager</option>
-                  <option value="EMPLOYEE" className="bg-slate-800">Employee</option>
-                </select>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className="pl-9 bg-background/50"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
               </div>
 
-              {/* Password Fields */}
-              <div className="relative group">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-indigo-300 group-focus-within:text-indigo-400 transition-colors" />
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
-                  required
-                />
-              </div>
-
-              <div className="relative group">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-indigo-300 group-focus-within:text-indigo-400 transition-colors" />
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  placeholder="Confirm Password"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
-                  required
-                />
-              </div>
-
-              {/* Error Message */}
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-500/20 border border-red-500/30 rounded-xl p-3 text-red-300 text-sm"
-                >
-                  {error}
-                </motion.div>
-              )}
-
-              {/* Submit Button */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              <Button
                 type="submit"
+                className="w-full font-medium mt-2"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                size="lg"
               >
                 {isLoading ? (
-                  <span className="inline-flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Creating Account...
-                  </span>
+                  </>
                 ) : (
-                  'Create Account'
+                  <>
+                    Create Account
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
                 )}
-              </motion.button>
+              </Button>
             </form>
+          </CardContent>
+        </Card>
 
-            {/* Login Link */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="text-center mt-6"
-            >
-              <p className="text-indigo-300">
-                Already have an account?{' '}
-                <button
-                  onClick={() => router.push('/login')}
-                  className="text-white hover:text-indigo-300 font-medium transition-colors duration-200"
-                >
-                  Sign in
-                </button>
-              </p>
-            </motion.div>
-          </motion.div>
-        </motion.div>
+        {/* Footer */}
+        <p className="text-center text-sm text-muted-foreground mt-6">
+          Already have an account?{' '}
+          <button
+            onClick={() => router.push('/login')}
+            className="text-primary font-medium hover:underline transition-all"
+          >
+            Sign in
+          </button>
+        </p>
       </div>
     </div>
   )
