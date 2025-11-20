@@ -41,12 +41,24 @@ export default function AdminDashboard() {
       const employeesData = await apiService.getEmployees(0, 100)
       const totalEmployees = employeesData.total
 
-      // Mock dashboard data (will be replaced with real API calls)
-      const mockStats: DashboardStats = {
+      // Fetch payroll runs
+      const payrollRuns = await apiService.getPayrollRuns()
+      let monthlyPayroll = 0
+      if (payrollRuns.length > 0) {
+        const latestRun = payrollRuns[0]
+        const lines = await apiService.getPayrollRunLines(latestRun.id)
+        monthlyPayroll = lines.reduce((sum: number, line: any) => sum + Number(line.netPay), 0)
+      }
+
+      // Fetch leave requests
+      const leaveRequests = await apiService.getLeaveRequests()
+      const pendingLeave = leaveRequests.filter((r: any) => r.status === 'pending').length
+
+      const stats: DashboardStats = {
         totalEmployees,
-        monthlyPayroll: 2450000,
-        pendingLeave: 3,
-        avgProcessingTime: 2.5
+        monthlyPayroll,
+        pendingLeave,
+        avgProcessingTime: 2.5 // Keep mock for now
       }
 
       const mockActivities: Activity[] = [
@@ -84,7 +96,7 @@ export default function AdminDashboard() {
         },
       ]
 
-      setStats(mockStats)
+      setStats(stats)
       setActivities(mockActivities)
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err)

@@ -1,10 +1,14 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Calculator, Calendar, Users, DollarSign, Download, Eye } from 'lucide-react'
+import { apiService } from '@/services/api'
+import { LoadingState, LoadingCard } from '@/components/ui/loading'
+import { ErrorState } from '@/components/ui/error-state'
+import { toast } from 'sonner'
 
 interface PayrollRun {
   id: string
@@ -17,34 +21,40 @@ interface PayrollRun {
   completedAt?: string
 }
 
-const mockPayrollRuns: PayrollRun[] = [
-  {
-    id: '1',
-    periodYear: 2024,
-    periodMonth: 11,
-    status: 'posted',
-    totalEmployees: 24,
-    totalAmount: 2450000,
-    startedAt: '2024-11-01T09:00:00Z',
-    completedAt: '2024-11-01T11:30:00Z',
-  },
-  {
-    id: '2',
-    periodYear: 2024,
-    periodMonth: 10,
-    status: 'posted',
-    totalEmployees: 23,
-    totalAmount: 2380000,
-    startedAt: '2024-10-01T09:00:00Z',
-    completedAt: '2024-10-01T11:15:00Z',
-  },
-]
-
 export default function PayrollPage() {
-  const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>(mockPayrollRuns)
+  const [payrollRuns, setPayrollRuns] = useState<PayrollRun[]>([])
   const [selectedMonth, setSelectedMonth] = useState('')
   const [selectedYear, setSelectedYear] = useState('2024')
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
+
+  const fetchPayrollRuns = async () => {
+    try {
+      setIsLoading(true)
+      const runs = await apiService.getPayrollRuns()
+      const mappedRuns = runs.map((run: any) => ({
+        id: run.id,
+        periodYear: run.periodYear,
+        periodMonth: run.periodMonth,
+        status: run.status,
+        totalEmployees: run.lineItems?.length || 0,
+        totalAmount: run.lineItems?.reduce((sum: number, item: any) => sum + Number(item.netPay), 0) || 0,
+        startedAt: run.startedAt,
+        completedAt: run.completedAt
+      }))
+      setPayrollRuns(mappedRuns)
+    } catch (err) {
+      console.error('Failed to fetch payroll runs:', err)
+      setError(err as Error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchPayrollRuns()
+  }, [])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-NG', {
@@ -74,21 +84,43 @@ export default function PayrollPage() {
 
   const handleProcessPayroll = async () => {
     setIsProcessing(true)
-    // Simulate payroll processing
-    setTimeout(() => {
-      setIsProcessing(false)
-      // Add new payroll run to the list
-      const newRun: PayrollRun = {
-        id: String(payrollRuns.length + 1),
+    try {
+      await apiService.createPayrollRun({
         periodYear: parseInt(selectedYear),
-        periodMonth: parseInt(selectedMonth),
-        status: 'processed',
-        totalEmployees: 24,
-        totalAmount: 2450000,
-        startedAt: new Date().toISOString(),
-      }
-      setPayrollRuns([newRun, ...payrollRuns])
-    }, 3000)
+        periodMonth: parseInt(selectedMonth)
+      })
+      toast.success('Payroll run created successfully')
+      fetchPayrollRuns()
+    } catch (err) {
+      console.error('Failed to create payroll run:', err)
+      toast.error('Failed to create payroll run')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  if (isLoading && payrollRuns.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Payroll</h1>
+            <p className="text-gray-600">Manage and process monthly payroll</p>
+          </div>
+        </div>
+        <LoadingCard count={2} />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <ErrorState
+        title="Failed to load payroll runs"
+        message="We couldn't fetch your payroll history. Please try again."
+        onRetry={fetchPayrollRuns}
+      />
+    )
   }
 
   return (
@@ -145,7 +177,7 @@ export default function PayrollPage() {
                 className="h-10"
               />
             </div>
-            <Button 
+            <Button
               onClick={handleProcessPayroll}
               disabled={!selectedMonth || isProcessing}
               className="h-10"
@@ -201,13 +233,12 @@ export default function PayrollPage() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    run.status === 'posted' 
-                      ? 'bg-green-100 text-green-800' 
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${run.status === 'posted'
+                      ? 'bg-green-100 text-green-800'
                       : run.status === 'processed'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
                     {run.status}
                   </span>
                   <Button variant="outline" size="sm">

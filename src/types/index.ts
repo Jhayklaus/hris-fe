@@ -43,6 +43,7 @@ export interface Employee {
   status: 'active' | 'inactive'
   managerId?: string
   manager?: Employee
+  salaryHistory?: SalaryHistory[]
 }
 
 export interface SalaryHistory {

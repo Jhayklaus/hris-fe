@@ -7,11 +7,10 @@ class ApiService {
 
   constructor() {
     this.api = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://vssuwsfcbbjuqsulmlkl.supabase.co',
+      baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api',
       timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
-        
       },
     })
 
@@ -75,12 +74,12 @@ class ApiService {
   async login(credentials: { email: string; password: string; companyId: string }): Promise<{ token: string }> {
     const response = await this.api.post<{ token: string }>('/auth/login', credentials)
     const { token } = response.data
-    
+
     this.setAuthToken(token)
     if (typeof window !== 'undefined') {
       localStorage.setItem('accessToken', token)
     }
-    
+
     return response.data
   }
 
@@ -114,7 +113,11 @@ class ApiService {
   }
 
   async createPayrollRun(data: { periodYear: number; periodMonth: number }): Promise<PayrollRun> {
-    return this.post<PayrollRun>('/payroll', data)
+    return this.post<PayrollRun>('/payroll/runs', data)
+  }
+
+  async getPayrollRunLines(runId: string): Promise<any[]> {
+    return this.get<any[]>(`/payroll/runs/${runId}/lines`)
   }
 
   // Leave endpoints
